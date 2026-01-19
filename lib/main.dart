@@ -63,7 +63,7 @@ class _SupplierAppState extends State<SupplierApp> {
     // We also update stock for simplicity here, assuming the order is accepted immediately
     // In a real app, stock update happens when the order is 'Shipped'.
     for (var item in newOrder.items) {
-      _updateStockByName(item.name, -item.quantity);
+      _updateStockByName(item.itemName, -item.quantity);
     }
   }
 
@@ -75,7 +75,7 @@ class _SupplierAppState extends State<SupplierApp> {
       }
     });
   }
-  
+
   void _updateStock(String id, int change) {
     setState(() {
       final index = _inventory.indexWhere((item) => item.id == id);
@@ -111,18 +111,21 @@ class _SupplierAppState extends State<SupplierApp> {
         theme: ThemeData(
           primaryColor: kPrimaryColor,
           colorScheme: ColorScheme.fromSwatch(
-            primarySwatch: MaterialColor(kPrimaryColor.value, const <int, Color>{
-              50: Color(0xFFE8F6F1),
-              100: Color(0xFFC7EADE),
-              200: Color(0xFFA0D1C7),
-              300: Color(0xFF78B9AC),
-              400: Color(0xFF56A196),
-              500: kPrimaryColor, // Main color
-              600: Color(0xFF0F9873),
-              700: Color(0xFF0D8267),
-              800: Color(0xFF0A6D5A),
-              900: Color(0xFF064741),
-            }),
+            primarySwatch: MaterialColor(
+              kPrimaryColor.value,
+              const <int, Color>{
+                50: Color(0xFFE8F6F1),
+                100: Color(0xFFC7EADE),
+                200: Color(0xFFA0D1C7),
+                300: Color(0xFF78B9AC),
+                400: Color(0xFF56A196),
+                500: kPrimaryColor, // Main color
+                600: Color(0xFF0F9873),
+                700: Color(0xFF0D8267),
+                800: Color(0xFF0A6D5A),
+                900: Color(0xFF064741),
+              },
+            ),
             backgroundColor: kBackgroundColor,
           ).copyWith(secondary: kPrimaryColor),
           scaffoldBackgroundColor: kBackgroundColor,

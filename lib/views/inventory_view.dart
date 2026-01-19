@@ -24,17 +24,29 @@ class InventoryView extends StatelessWidget {
           ),
           child: Row(
             children: [
-              const Icon(Icons.shopping_bag_outlined, color: kPrimaryColor, size: 20),
+              const Icon(
+                Icons.shopping_bag_outlined,
+                color: kPrimaryColor,
+                size: 20,
+              ),
               const SizedBox(width: 8),
               Text(
                 'You have ${inventory.length} distinct products in stock.',
-                style: const TextStyle(color: kPrimaryColor, fontWeight: FontWeight.w500),
+                style: const TextStyle(
+                  color: kPrimaryColor,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ],
           ),
         ),
         const SizedBox(height: 16),
-        ...inventory.map((item) => InventoryCard(item: item, onUpdateStock: state.updateStock)).toList(),
+        ...inventory
+            .map(
+              (item) =>
+                  InventoryCard(item: item, onUpdateStock: state.updateStock),
+            )
+            .toList(),
       ],
     );
   }
@@ -44,7 +56,11 @@ class InventoryCard extends StatelessWidget {
   final InventoryItem item;
   final Function(String, int) onUpdateStock;
 
-  const InventoryCard({super.key, required this.item, required this.onUpdateStock});
+  const InventoryCard({
+    super.key,
+    required this.item,
+    required this.onUpdateStock,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -68,20 +84,38 @@ class InventoryCard extends StatelessWidget {
               children: [
                 Text(
                   item.name,
-                  style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.black87),
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
                 ),
                 if (isLow)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.red.shade100,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.warning_amber_rounded, size: 14, color: Colors.red.shade700),
+                        Icon(
+                          Icons.warning_amber_rounded,
+                          size: 14,
+                          color: Colors.red.shade700,
+                        ),
                         const SizedBox(width: 4),
-                        Text('Low Stock', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.red.shade700)),
+                        Text(
+                          'Low Stock',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.red.shade700,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -93,12 +127,24 @@ class InventoryCard extends StatelessWidget {
               children: [
                 RichText(
                   text: TextSpan(
-                    text: item.stock.toString(),
-                    style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w900, color: kPrimaryColor),
+                    // FIXED: Logic to hide decimal for Pcs/Units, keep for kg/liters
+                    text: item.stock % 1 == 0
+                        ? item.stock.toInt().toString()
+                        : item.stock.toStringAsFixed(1),
+                    // FIXED: Reduced font size from 30 to 24 for better mobile fit
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w900,
+                      color: kPrimaryColor,
+                    ),
                     children: [
                       TextSpan(
                         text: ' ${item.unit}',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey.shade500),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey.shade500,
+                        ),
                       ),
                     ],
                   ),
@@ -123,7 +169,7 @@ class InventoryCard extends StatelessWidget {
                       child: const Icon(Icons.add, size: 20),
                     ),
                   ],
-                )
+                ),
               ],
             ),
           ],

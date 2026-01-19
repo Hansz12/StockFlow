@@ -6,26 +6,29 @@ class OrdersView extends StatelessWidget {
   final String activeTab;
   final List<Order> orders;
 
-  const OrdersView({
-    super.key,
-    required this.activeTab,
-    required this.orders,
-  });
+  const OrdersView({super.key, required this.activeTab, required this.orders});
 
   @override
   Widget build(BuildContext context) {
     if (orders.isEmpty) {
       return _buildEmptyState(activeTab);
     }
-    
+
     // We get the state here to pass the update function down
     final state = GlobalAppState.of(context);
 
     return Column(
-      children: orders.map((order) => OrderCard(order: order, onUpdateStatus: state.updateOrderStatus)).toList(),
+      children: orders
+          .map(
+            (order) => OrderCard(
+              order: order,
+              onUpdateStatus: state.updateOrderStatus,
+            ),
+          )
+          .toList(),
     );
   }
-  
+
   Widget _buildEmptyState(String tab) {
     return Padding(
       padding: const EdgeInsets.only(top: 80.0),
@@ -39,12 +42,19 @@ class OrdersView extends StatelessWidget {
                 color: Colors.grey.shade100,
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.check_circle_outline, size: 40, color: Colors.grey.shade300),
+              child: Icon(
+                Icons.check_circle_outline,
+                size: 40,
+                color: Colors.grey.shade300,
+              ),
             ),
             const SizedBox(height: 16),
             Text(
               'No ${tab.toLowerCase()} orders',
-              style: TextStyle(color: Colors.grey.shade500, fontWeight: FontWeight.w500),
+              style: TextStyle(
+                color: Colors.grey.shade500,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ],
         ),
@@ -57,12 +67,20 @@ class OrderCard extends StatelessWidget {
   final Order order;
   final Function(String, OrderStatus) onUpdateStatus;
 
-  const OrderCard({super.key, required this.order, required this.onUpdateStatus});
+  const OrderCard({
+    super.key,
+    required this.order,
+    required this.onUpdateStatus,
+  });
 
   @override
   Widget build(BuildContext context) {
     final theme = OrderStatusTheme.getTheme(order.status);
-    final totalOrderValue = order.items.fold<double>(0.0, (sum, item) => sum + item.total);
+    // Uses the .total getter from the new models.dart
+    final totalOrderValue = order.items.fold<double>(
+      0.0,
+      (sum, item) => sum + item.total,
+    );
 
     return Card(
       elevation: 0,
@@ -84,7 +102,9 @@ class OrderCard extends StatelessWidget {
                 width: 6,
                 decoration: BoxDecoration(
                   color: theme.background.withOpacity(0.8),
-                  borderRadius: const BorderRadius.horizontal(left: Radius.circular(16)),
+                  borderRadius: const BorderRadius.horizontal(
+                    left: Radius.circular(16),
+                  ),
                 ),
               ),
             ),
@@ -103,18 +123,26 @@ class OrderCard extends StatelessWidget {
                           Text(
                             order.customerName,
                             style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87),
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
                           ),
                           Text(
-                            'ID: ${order.customerShopId.substring(0, 12)}...',
-                            style: TextStyle(fontSize: 12, color: Colors.grey.shade400),
+                            // Safety check for substring
+                            'ID: ${order.customerShopId.length > 8 ? order.customerShopId.substring(0, 8) : order.customerShopId}...',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade400,
+                            ),
                           ),
                         ],
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: theme.background,
                           borderRadius: BorderRadius.circular(20),
@@ -123,11 +151,14 @@ class OrderCard extends StatelessWidget {
                           children: [
                             Icon(theme.icon, size: 14, color: theme.text),
                             const SizedBox(width: 4),
-                            Text(order.status.name.toUpperCase(),
-                                style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    color: theme.text)),
+                            Text(
+                              order.status.name.toUpperCase(),
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: theme.text,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -144,21 +175,44 @@ class OrderCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        ...order.items.map((item) => Padding(
-                          padding: const EdgeInsets.only(bottom: 4.0),
-                          child: Text('${item.quantity} x ${item.name} (\$${item.total.toStringAsFixed(2)})',
-                              style: TextStyle(
-                                  fontSize: 14, color: Colors.grey.shade700)),
-                        )).toList(),
-                        if (order.items.isNotEmpty) const Divider(height: 8, thickness: 1),
+                        ...order.items
+                            .map(
+                              (item) => Padding(
+                                padding: const EdgeInsets.only(bottom: 4.0),
+                                // CHANGED: item.name -> item.itemName to match models.dart
+                                child: Text(
+                                  '${item.quantity} x ${item.itemName} (\$${item.total.toStringAsFixed(2)})',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey.shade700,
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                        if (order.items.isNotEmpty)
+                          const Divider(height: 8, thickness: 1),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text('TOTAL:', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-                            Text('\$${totalOrderValue.toStringAsFixed(2)}', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: kPrimaryColor)),
+                            const Text(
+                              'TOTAL:',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              '\$${totalOrderValue.toStringAsFixed(2)}',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: kPrimaryColor,
+                              ),
+                            ),
                           ],
-                        )
-                      ]
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -166,44 +220,84 @@ class OrderCard extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
+                        // Uses the getter from models.dart
                         OrderStatusTheme.timeAgo(order.timestamp),
-                        style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic, color: Colors.grey.shade400),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontStyle: FontStyle.italic,
+                          color: Colors.grey.shade400,
+                        ),
                       ),
                       Row(
                         children: [
                           if (order.status == OrderStatus.pending) ...[
                             IconButton(
-                              onPressed: () => onUpdateStatus(order.id, OrderStatus.rejected),
-                              icon: Icon(Icons.close, color: Colors.red.shade500),
+                              onPressed: () => onUpdateStatus(
+                                order.id,
+                                OrderStatus.rejected,
+                              ),
+                              icon: Icon(
+                                Icons.close,
+                                color: Colors.red.shade500,
+                              ),
                             ),
                             const SizedBox(width: 8),
                             ElevatedButton(
-                              onPressed: () => onUpdateStatus(order.id, OrderStatus.accepted),
+                              onPressed: () => onUpdateStatus(
+                                order.id,
+                                OrderStatus.accepted,
+                              ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: kPrimaryColor,
                                 foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 8,
+                                ),
                               ),
-                              child: const Text('Accept', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                              child: const Text(
+                                'Accept',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
                           ],
                           if (order.status == OrderStatus.accepted)
                             ElevatedButton.icon(
-                              onPressed: () => onUpdateStatus(order.id, OrderStatus.shipped),
-                              icon: const Icon(Icons.local_shipping_outlined, size: 18),
-                              label: const Text('Mark Shipped', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                              onPressed: () =>
+                                  onUpdateStatus(order.id, OrderStatus.shipped),
+                              icon: const Icon(
+                                Icons.local_shipping_outlined,
+                                size: 18,
+                              ),
+                              label: const Text(
+                                'Mark Shipped',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.blue.shade600,
                                 foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 8,
+                                ),
                               ),
                             ),
                         ],
                       ),
                     ],
-                  )
+                  ),
                 ],
               ),
             ),
@@ -211,5 +305,65 @@ class OrderCard extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+// --- HELPER CLASS ---
+class OrderStatusTheme {
+  final Color background;
+  final Color text;
+  final IconData icon;
+
+  OrderStatusTheme(this.background, this.text, this.icon);
+
+  static OrderStatusTheme getTheme(OrderStatus status) {
+    switch (status) {
+      case OrderStatus.pending:
+        return OrderStatusTheme(
+          Colors.orange.shade100,
+          Colors.orange.shade800,
+          Icons.access_time,
+        );
+      case OrderStatus.accepted:
+        return OrderStatusTheme(
+          Colors.blue.shade100,
+          Colors.blue.shade800,
+          Icons.thumb_up,
+        );
+      case OrderStatus.shipped:
+        return OrderStatusTheme(
+          Colors.purple.shade100,
+          Colors.purple.shade800,
+          Icons.local_shipping,
+        );
+      case OrderStatus.delivered:
+        return OrderStatusTheme(
+          Colors.green.shade100,
+          Colors.green.shade800,
+          Icons.check_circle,
+        );
+      case OrderStatus.rejected:
+        return OrderStatusTheme(
+          Colors.red.shade100,
+          Colors.red.shade800,
+          Icons.cancel,
+        );
+      default:
+        return OrderStatusTheme(
+          Colors.grey.shade100,
+          Colors.grey.shade800,
+          Icons.help_outline,
+        );
+    }
+  }
+
+  static String timeAgo(DateTime d) {
+    Duration diff = DateTime.now().difference(d);
+    if (diff.inDays > 365) return "${(diff.inDays / 365).floor()}y ago";
+    if (diff.inDays > 30) return "${(diff.inDays / 30).floor()}m ago";
+    if (diff.inDays > 0) return "${diff.inDays}d ago";
+    if (diff.inHours > 0) return "${diff.inHours}h ago";
+    if (diff.inMinutes > 0) return "${diff.inMinutes}m ago";
+    return "Just now";
   }
 }

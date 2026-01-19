@@ -5,7 +5,11 @@ import '../models.dart'; // Go up one level
 class CustomerShopScreen extends StatefulWidget {
   final bool isSupplier;
   final ValueChanged<bool> onToggleRole;
-  const CustomerShopScreen({super.key, required this.isSupplier, required this.onToggleRole});
+  const CustomerShopScreen({
+    super.key,
+    required this.isSupplier,
+    required this.onToggleRole,
+  });
 
   @override
   State<CustomerShopScreen> createState() => _CustomerShopScreenState();
@@ -29,7 +33,11 @@ class _CustomerShopScreenState extends State<CustomerShopScreen> {
 
   void _placeOrder(GlobalAppState state) {
     if (_cart.isEmpty) {
-      _showSnackbar(context, 'Cart is empty. Add items before ordering.', isError: true);
+      _showSnackbar(
+        context,
+        'Cart is empty. Add items before ordering.',
+        isError: true,
+      );
       return;
     }
 
@@ -41,16 +49,19 @@ class _CustomerShopScreenState extends State<CustomerShopScreen> {
       final quantity = entry.value;
 
       final inventoryItem = state.inventory.firstWhere((i) => i.id == itemId);
-      
-      items.add(OrderItem(
-        name: inventoryItem.name,
-        quantity: quantity,
-        unit: inventoryItem.unit,
-        pricePerUnit: inventoryItem.price,
-      ));
+
+      // FIXED: Used .fromCart constructor to match models.dart
+      items.add(
+        OrderItem.fromCart(
+          name: inventoryItem.name,
+          quantity: quantity,
+          unit: inventoryItem.unit,
+          pricePerUnit: inventoryItem.price,
+        ),
+      );
       totalValue += (inventoryItem.price * quantity);
     }
-    
+
     // Create the new Order object
     final newOrder = Order(
       id: generateId(), // Uses the new global ID generator from models.dart
@@ -58,7 +69,7 @@ class _CustomerShopScreenState extends State<CustomerShopScreen> {
       customerName: _customerName,
       status: OrderStatus.pending,
       items: items,
-      timestamp: DateTime.now(),
+      date: DateTime.now(), // FIXED: Changed 'timestamp' to 'date'
       notes: _customerNotes,
     );
 
@@ -71,10 +82,18 @@ class _CustomerShopScreenState extends State<CustomerShopScreen> {
       _customerNotes = '';
     });
 
-    _showSnackbar(context, 'Order placed successfully! Total: \$${totalValue.toStringAsFixed(2)}', isError: false);
+    _showSnackbar(
+      context,
+      'Order placed successfully! Total: \$${totalValue.toStringAsFixed(2)}',
+      isError: false,
+    );
   }
 
-  void _showSnackbar(BuildContext context, String message, {required bool isError}) {
+  void _showSnackbar(
+    BuildContext context,
+    String message, {
+    required bool isError,
+  }) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -85,24 +104,32 @@ class _CustomerShopScreenState extends State<CustomerShopScreen> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     final state = GlobalAppState.of(context);
-    final cartItemCount = _cart.entries.fold<int>(0, (prev, element) => prev + element.value);
+    final cartItemCount = _cart.entries.fold<int>(
+      0,
+      (prev, element) => prev + element.value,
+    );
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blue.shade600,
         foregroundColor: Colors.white,
-        title: Text('Welcome, $_customerName', style: const TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          'Welcome, $_customerName',
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
         centerTitle: false,
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
             child: Row(
               children: [
-                const Text('Customer', style: TextStyle(fontSize: 12, color: Colors.white70)),
+                const Text(
+                  'Customer',
+                  style: TextStyle(fontSize: 12, color: Colors.white70),
+                ),
                 Switch.adaptive(
                   value: widget.isSupplier,
                   onChanged: (value) => widget.onToggleRole(value),
@@ -111,10 +138,13 @@ class _CustomerShopScreenState extends State<CustomerShopScreen> {
                   inactiveThumbColor: Colors.white,
                   inactiveTrackColor: Colors.white.withOpacity(0.5),
                 ),
-                const Text('Supplier', style: TextStyle(fontSize: 12, color: Colors.white70)),
+                const Text(
+                  'Supplier',
+                  style: TextStyle(fontSize: 12, color: Colors.white70),
+                ),
               ],
             ),
-          )
+          ),
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(60),
@@ -131,7 +161,10 @@ class _CustomerShopScreenState extends State<CustomerShopScreen> {
                     ),
                     child: Text(
                       'Tap items to add to your order. Stock is live!',
-                      style: TextStyle(color: Colors.blue.shade800, fontWeight: FontWeight.w500),
+                      style: TextStyle(
+                        color: Colors.blue.shade800,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 ),
@@ -145,13 +178,21 @@ class _CustomerShopScreenState extends State<CustomerShopScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Available Products', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const Text(
+              'Available Products',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 16),
-            ...state.inventory.map((item) => CustomerProductCard(
-              item: item,
-              currentQuantity: _cart[item.id] ?? 0,
-              onQuantityChanged: (quantity) => _updateCart(item, quantity),
-            )).toList(),
+            ...state.inventory
+                .map(
+                  (item) => CustomerProductCard(
+                    item: item,
+                    currentQuantity: _cart[item.id] ?? 0,
+                    onQuantityChanged: (quantity) =>
+                        _updateCart(item, quantity),
+                  ),
+                )
+                .toList(),
             const SizedBox(height: 32),
           ],
         ),
@@ -160,13 +201,21 @@ class _CustomerShopScreenState extends State<CustomerShopScreen> {
     );
   }
 
-  Widget _buildBottomBar(BuildContext context, int cartItemCount, GlobalAppState state) {
+  Widget _buildBottomBar(
+    BuildContext context,
+    int cartItemCount,
+    GlobalAppState state,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, -5)),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, -5),
+          ),
         ],
       ),
       child: Row(
@@ -180,7 +229,9 @@ class _CustomerShopScreenState extends State<CustomerShopScreen> {
                 foregroundColor: Colors.blue.shade600,
                 side: BorderSide(color: Colors.blue.shade300),
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
           ),
@@ -191,10 +242,14 @@ class _CustomerShopScreenState extends State<CustomerShopScreen> {
               icon: const Icon(Icons.send),
               label: const Text('Place Order'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: cartItemCount > 0 ? kPrimaryColor : Colors.grey.shade400,
+                backgroundColor: cartItemCount > 0
+                    ? kPrimaryColor
+                    : Colors.grey.shade400,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
           ),
@@ -235,60 +290,88 @@ class _CustomerShopScreenState extends State<CustomerShopScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Your Order Summary', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                  const Text(
+                    'Your Order Summary',
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  ),
                   const Divider(height: 20),
-                  
+
                   if (cartDetails.isEmpty)
                     const Padding(
                       padding: EdgeInsets.symmetric(vertical: 40.0),
                       child: Center(child: Text('Your cart is empty.')),
                     ),
-                  
+
                   ...cartDetails.map((entry) {
                     final item = entry.key;
                     final quantity = entry.value;
                     return ListTile(
                       title: Text(item.name),
-                      subtitle: Text('\$${item.price.toStringAsFixed(2)} / ${item.unit}'),
-                      trailing: Text('${quantity} x', style: const TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: Text(
+                        '\$${item.price.toStringAsFixed(2)} / ${item.unit}',
+                      ),
+                      trailing: Text(
+                        '${quantity} x',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
                     );
                   }).toList(),
 
                   const Divider(height: 20),
-                  
+
                   TextField(
                     decoration: const InputDecoration(
                       labelText: 'Order Notes (Optional)',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(10)),
+                      ),
                     ),
-                    onChanged: (value) => modalSetState(() => _customerNotes = value),
+                    onChanged: (value) =>
+                        modalSetState(() => _customerNotes = value),
                     controller: TextEditingController(text: _customerNotes),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Subtotal:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                      Text('\$${subtotal.toStringAsFixed(2)}', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: kPrimaryColor)),
+                      const Text(
+                        'Subtotal:',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        '\$${subtotal.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: kPrimaryColor,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 20),
-                  
+
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      onPressed: cartDetails.isNotEmpty ? () {
-                        _placeOrder(state);
-                        Navigator.pop(context);
-                      } : null,
+                      onPressed: cartDetails.isNotEmpty
+                          ? () {
+                              _placeOrder(state);
+                              Navigator.pop(context);
+                            }
+                          : null,
                       icon: const Icon(Icons.send),
                       label: const Text('Confirm and Place Order'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: kPrimaryColor,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                     ),
                   ),
@@ -363,7 +446,10 @@ class _CustomerProductCardState extends State<CustomerProductCard> {
       margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: isSelected ? kPrimaryColor : Colors.grey.shade200, width: isSelected ? 2 : 1),
+        side: BorderSide(
+          color: isSelected ? kPrimaryColor : Colors.grey.shade200,
+          width: isSelected ? 2 : 1,
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -377,11 +463,18 @@ class _CustomerProductCardState extends State<CustomerProductCard> {
                   children: [
                     Text(
                       widget.item.name,
-                      style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.black87),
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
                     ),
                     Text(
                       '\$${widget.item.price.toStringAsFixed(2)} / ${widget.item.unit}',
-                      style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade600,
+                      ),
                     ),
                   ],
                 ),
@@ -390,11 +483,19 @@ class _CustomerProductCardState extends State<CustomerProductCard> {
                   children: [
                     Text(
                       'Stock: ${widget.item.stock}',
-                      style: TextStyle(fontSize: 12, color: isAvailable ? kPrimaryColor : Colors.red),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isAvailable ? kPrimaryColor : Colors.red,
+                      ),
                     ),
-                    if (isSelected) 
-                      Text('Subtotal: \$${(widget.item.price * _quantity).toStringAsFixed(2)}',
-                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                    if (isSelected)
+                      Text(
+                        'Subtotal: \$${(widget.item.price * _quantity).toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                   ],
                 ),
               ],
@@ -405,7 +506,10 @@ class _CustomerProductCardState extends State<CustomerProductCard> {
               children: [
                 Text(
                   isSelected ? 'In Cart: $_quantity' : 'Select Quantity',
-                  style: TextStyle(fontSize: 16, color: isSelected ? kPrimaryColor : Colors.grey.shade500),
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: isSelected ? kPrimaryColor : Colors.grey.shade500,
+                  ),
                 ),
                 Row(
                   children: [
@@ -422,13 +526,20 @@ class _CustomerProductCardState extends State<CustomerProductCard> {
                       child: Text(
                         '$_quantity',
                         textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                     FloatingActionButton.small(
                       heroTag: 'cust-plus-${widget.item.id}',
-                      onPressed: isAvailable && _quantity < widget.item.stock ? _increment : null,
-                      backgroundColor: isAvailable ? kPrimaryColor : Colors.grey.shade300,
+                      onPressed: isAvailable && _quantity < widget.item.stock
+                          ? _increment
+                          : null,
+                      backgroundColor: isAvailable
+                          ? kPrimaryColor
+                          : Colors.grey.shade300,
                       foregroundColor: Colors.white,
                       elevation: isAvailable ? 4 : 0,
                       child: const Icon(Icons.add, size: 20),
